@@ -8,32 +8,47 @@ import rand_arr_elem from '../../helpers/rand_arr_elem'
 import rand_to_fro from '../../helpers/rand_to_fro'
 
 const GRID_SIZE = 5;
+const GRID_ARRAY = Array(GRID_SIZE).fill(0)
+
+const horizontalWinsRows = GRID_ARRAY.map(function (_, rowIndex) {
+	const row = GRID_ARRAY.map(function (_, colIndex) {
+		const id = rowIndex * GRID_SIZE + colIndex + 1
+		return `c${id}`
+	})
+	return row
+})
+
+const verticalWinsCols = GRID_ARRAY.map(function (_, colIndex) {
+	const col = GRID_ARRAY.map(function (_, rowIndex) {
+		const id = rowIndex * GRID_SIZE + colIndex + 1
+		return `c${id}`
+	})
+	return col
+})
+
+// Diagonal wins (top-left)
+const DiagonalWinsTL = GRID_ARRAY.map(function (_, index) {
+	const id = 1 + index * (GRID_SIZE + 1)
+	return `c${id}`
+})
+
+// Diagonal wins (bottom-right)
+const DiagonalWinsBR = GRID_ARRAY.map(function (_, index) {
+	const id = 5 + index * (GRID_SIZE - 1)
+	return `c${id}`
+})
+
+const win_sets = [
+	...horizontalWinsRows,
+	...verticalWinsCols,
+	DiagonalWinsTL,
+	DiagonalWinsBR,
+]
 
 export default class SetName extends Component {
 
 	constructor(props) {
 		super(props)
-
-		this.win_sets = [
-			// Horizontal wins
-			['c1', 'c2', 'c3', 'c4', 'c5'],
-			['c6', 'c7', 'c8', 'c9', 'c10'],
-			['c11', 'c12', 'c13', 'c14', 'c15'],
-			['c16', 'c17', 'c18', 'c19', 'c20'],
-			['c21', 'c22', 'c23', 'c24', 'c25'],
-
-			// Vertical wins
-			['c1', 'c6', 'c11', 'c16', 'c21'],
-			['c2', 'c7', 'c12', 'c17', 'c22'],
-			['c3', 'c8', 'c13', 'c18', 'c23'],
-			['c4', 'c9', 'c14', 'c19', 'c24'],
-			['c5', 'c10', 'c15', 'c20', 'c25'],
-
-			// Diagonal wins (top-left to bottom-right)
-			['c1', 'c7', 'c13', 'c19', 'c25'],
-			['c5', 'c9', 'c13', 'c17', 'c21']
-		];
-
 
 		if (this.props.game_type != 'live')
 			this.state = {
@@ -105,7 +120,6 @@ export default class SetName extends Component {
 
 	cell_cont(c) {
 		const { cell_vals } = this.state
-		console.log('cell_cont', c, cell_vals)
 		return (
 			<div>
 				{cell_vals && cell_vals[c] == 'x' && <i className="fa fa-times fa-5x"></i>}
@@ -117,7 +131,7 @@ export default class SetName extends Component {
 	//	------------------------	------------------------	------------------------
 
 	render() {
-		const { cell_vals } = this.state
+		// const { cell_vals } = this.state
 		// console.log(cell_vals)
 
 		return (
@@ -134,16 +148,17 @@ export default class SetName extends Component {
 					<table>
 						<tbody>
 							{
-								Array(GRID_SIZE).fill(1).map(function (_, rowIndex) {
+								GRID_ARRAY.map(function (_, rowIndex) {
 									return (
-										<tr>
+										<tr key={rowIndex}>
 											{
-												Array(GRID_SIZE).fill(1).map(function (_, colIndex) {
+												GRID_ARRAY.map(function (_, colIndex) {
 													const cellId = `c${rowIndex * GRID_SIZE + colIndex + 1}`
 													const vbrdClassName = colIndex > 0 && colIndex < GRID_SIZE - 1 ? 'vbrd' : ''
 													const hbrdClassName = rowIndex > 0 && rowIndex < GRID_SIZE - 1 ? 'hbrd' : ''
 													return (
 														<td
+															key={cellId}
 															ref={cellId}
 															id={`game_board-${cellId}`}
 															className={`${vbrdClassName} ${hbrdClassName}`}
@@ -303,8 +318,8 @@ export default class SetName extends Component {
 			this.state.game_stat = 'Play'
 
 
-		for (let i = 0; !win && i < this.win_sets.length; i++) {
-			set = this.win_sets[i]
+		for (let i = 0; !win && i < win_sets.length; i++) {
+			set = win_sets[i]
 			// if (cell_vals[set[0]] && cell_vals[set[0]] == cell_vals[set[1]] && cell_vals[set[0]] == cell_vals[set[2]])
 			// 	win = true
 			const hasWin = Array(GRID_SIZE).fill(0).every(function (_, index) {
